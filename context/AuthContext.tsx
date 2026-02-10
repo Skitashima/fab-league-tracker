@@ -47,11 +47,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                             playerId: firebaseUser.uid
                         };
                         setCurrentUser(fallbackUser);
-                        // Optional: Try to save it to DB asynchronously so next time it exists
+
+                        // Self-healing: Create missing documents (User AND Player)
                         try {
+                            // 1. Restore User Doc
                             await setDoc(doc(db, 'users', firebaseUser.uid), fallbackUser);
+
+                            // 2. Restore Player Doc if missing
+                            const playerRef = doc(db, 'players', firebaseUser.uid);
+                            const playerSnap = await getDoc(playerRef);
+
+                            if (!playerSnap.exists()) {
+                                const newPlayer = {
+                                    id: firebaseUser.uid,
+                                    name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || "Jugador",
+                                    heroStats: {},
+                                    tournamentsPlayed: 0,
+                                    totalWins: 0,
+                                    totalPoints: 0,
+                                    recentPerformance: []
+                                };
+                                await setDoc(playerRef, newPlayer);
+                                console.log("Self-healing: Created missing Player profile for", firebaseUser.email);
+                            }
                         } catch (e) {
-                            console.error("Failed to create fallback profile", e);
+                            console.error("Failed to perform self-healing", e);
                         }
                     }
                 } catch (error) {
