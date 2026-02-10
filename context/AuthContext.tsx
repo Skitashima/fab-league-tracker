@@ -38,9 +38,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     if (userDoc.exists()) {
                         setCurrentUser({ id: firebaseUser.uid, ...userDoc.data() } as User);
                     } else {
-                        // If user exists in Auth but not in Firestore (shouldn't happen in normal flow)
-                        console.warn("User authenticated but no profile found in Firestore.");
-                        // Potentially handle this case or wait for signup to complete it
+                        // FIX: If user exists in Auth but not in Firestore, create a basic profile to allow login
+                        console.warn("User Authenticated but no profile found. Creating fallback profile.");
+                        const fallbackUser: User = {
+                            id: firebaseUser.uid,
+                            email: firebaseUser.email || "",
+                            role: firebaseUser.email === 'santiagokita@gmail.com' ? 'ADMIN' : 'PLAYER',
+                            playerId: firebaseUser.uid
+                        };
+                        setCurrentUser(fallbackUser);
+                        // Optional: Try to save it to DB asynchronously so next time it exists
+                        try {
+                            await setDoc(doc(db, 'users', firebaseUser.uid), fallbackUser);
+                        } catch (e) {
+                            console.error("Failed to create fallback profile", e);
+                        }
                     }
                 } catch (error) {
                     console.error("Error fetching user profile:", error);
