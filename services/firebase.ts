@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from "firebase/firestore";
+import { initializeFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -19,9 +19,9 @@ console.log("   - API Key:", firebaseConfig.apiKey ? "OK (Length: " + firebaseCo
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+
 // Use initializeFirestore to configure experimental settings
+// experimentalForceLongPolling is often the fix for "Client Offline" errors in restrictive networks
 export const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({
-    tabManager: persistentMultipleTabManager()
-  })
+  experimentalForceLongPolling: true,
 });
