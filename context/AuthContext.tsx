@@ -39,52 +39,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         setCurrentUser({ id: firebaseUser.uid, ...userDoc.data() } as User);
                     } else {
                         // User exists in Auth but not in Firestore
-                        console.warn("User Authenticated but no profile found. Creating fallback profile.");
-                        const fallbackUser: User = {
-                            id: firebaseUser.uid,
-                            email: firebaseUser.email || "",
-                            role: firebaseUser.email === 'santiagokita@gmail.com' ? 'ADMIN' : 'PLAYER',
-                            playerId: firebaseUser.uid
-                        };
-                        setCurrentUser(fallbackUser);
-
-                        // Self-healing: Create missing documents (User AND Player)
-                        try {
-                            // 1. Restore User Doc
-                            await setDoc(doc(db, 'users', firebaseUser.uid), fallbackUser);
-
-                            // 2. Restore Player Doc if missing
-                            const playerRef = doc(db, 'players', firebaseUser.uid);
-                            const playerSnap = await getDoc(playerRef);
-
-                            if (!playerSnap.exists()) {
-                                const newPlayer = {
-                                    id: firebaseUser.uid,
-                                    name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || "Jugador",
-                                    heroStats: {},
-                                    tournamentsPlayed: 0,
-                                    totalWins: 0,
-                                    totalPoints: 0,
-                                    recentPerformance: []
-                                };
-                                await setDoc(playerRef, newPlayer);
-                                console.log("Self-healing: Created missing Player profile for", firebaseUser.email);
-                            }
-                        } catch (e) {
-                            console.error("Failed to perform self-healing", e);
-                        }
+                        console.warn("User Authenticated but no profile found in Firestore.");
                     }
                 } catch (error) {
                     console.error("Error fetching user profile:", error);
-                    // FIX: Even if Firestore fails (offline/error), allow login with fallback profile
-                    const fallbackUser: User = {
-                        id: firebaseUser.uid,
-                        email: firebaseUser.email || "",
-                        role: firebaseUser.email === 'santiagokita@gmail.com' ? 'ADMIN' : 'PLAYER',
-                        playerId: firebaseUser.uid
-                    };
-                    setCurrentUser(fallbackUser);
-                    console.warn("Using fallback profile due to Firestore error.");
                 }
             } else {
                 setCurrentUser(null);
