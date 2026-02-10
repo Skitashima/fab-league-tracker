@@ -42,7 +42,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         console.warn("User Authenticated but no profile found in Firestore.");
                     }
                 } catch (error) {
-                    console.error("Error fetching user profile:", error);
+                    console.error("Error fetching user profile (Offline/Network):", error);
+                    // CRITICAL FIX: Do not block login if Firestore is unreachable.
+                    // The user IS authenticated via Firebase Auth. We let them in.
+                    const fallbackUser: User = {
+                        id: firebaseUser.uid,
+                        email: firebaseUser.email || "",
+                        role: firebaseUser.email === 'santiagokita@gmail.com' ? 'ADMIN' : 'PLAYER',
+                        playerId: firebaseUser.uid
+                    };
+                    setCurrentUser(fallbackUser);
+                    console.warn("Logged in with Auth data only (Firestore unreachable).");
                 }
             } else {
                 setCurrentUser(null);
