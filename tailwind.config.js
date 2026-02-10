@@ -3,8 +3,8 @@ export default {
     content: [
         "./index.html",
         "./src/**/*.{js,ts,jsx,tsx}",
-        "./components/**/*.{js,ts,jsx,tsx}", // Added components folder just in case
-        "./**/*.{js,ts,jsx,tsx}", // Catch-all for root level files like App.tsx
+        "./components/**/*.{js,ts,jsx,tsx}",
+        "./*.{js,ts,jsx,tsx}", // Matches files in root like App.tsx, index.tsx, but not recursive
     ],
     theme: {
         extend: {
