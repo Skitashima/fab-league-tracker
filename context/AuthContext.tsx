@@ -74,71 +74,84 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                             console.error("Failed to perform self-healing", e);
                         }
                     }
-                } catch (error) {
-                    console.error("Error fetching user profile:", error);
+                } catch (e) {
+                    console.error("Failed to perform self-healing", e);
                 }
-            } else {
-                setCurrentUser(null);
             }
+        } catch (error) {
+            console.error("Error fetching user profile:", error);
+            // FIX: Even if Firestore fails (offline/error), allow login with fallback profile
+            const fallbackUser: User = {
+                id: firebaseUser.uid,
+                email: firebaseUser.email || "",
+                role: firebaseUser.email === 'santiagokita@gmail.com' ? 'ADMIN' : 'PLAYER',
+                playerId: firebaseUser.uid
+            };
+            setCurrentUser(fallbackUser);
+            console.warn("Using fallback profile due to Firestore error.");
+        }
+    } else {
+        setCurrentUser(null);
+    }
             setLoading(false);
-        });
+});
 
-        return unsubscribe;
+return unsubscribe;
     }, []);
 
-    // Auth Actions
-    const login = async (email: string, pass: string) => {
-        await signInWithEmailAndPassword(auth, email, pass);
+// Auth Actions
+const login = async (email: string, pass: string) => {
+    await signInWithEmailAndPassword(auth, email, pass);
+};
+
+const signup = async (email: string, pass: string, name: string) => {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+    const fbUser = userCredential.user;
+
+    // Create User Profile in Firestore
+    const newPlayerId = fbUser.uid; // Use UID as PlayerID for simplicity or generate one
+    const role: UserRole = email.toLowerCase() === 'santiagokita@gmail.com' ? 'ADMIN' : 'PLAYER';
+
+    const newUser: User = {
+        id: fbUser.uid,
+        email: email,
+        role: role,
+        playerId: newPlayerId
     };
 
-    const signup = async (email: string, pass: string, name: string) => {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-        const fbUser = userCredential.user;
+    // 1. Create User Document
+    await setDoc(doc(db, 'users', fbUser.uid), newUser);
 
-        // Create User Profile in Firestore
-        const newPlayerId = fbUser.uid; // Use UID as PlayerID for simplicity or generate one
-        const role: UserRole = email.toLowerCase() === 'santiagokita@gmail.com' ? 'ADMIN' : 'PLAYER';
-
-        const newUser: User = {
-            id: fbUser.uid,
-            email: email,
-            role: role,
-            playerId: newPlayerId
-        };
-
-        // 1. Create User Document
-        await setDoc(doc(db, 'users', fbUser.uid), newUser);
-
-        // 2. Create Player Document (We need to import this logic or do it here)
-        // For now, we do it here directly to ensure atomicity-ish consistency
-        const newPlayer = {
-            id: newPlayerId,
-            name: name,
-            heroStats: {},
-            tournamentsPlayed: 0,
-            totalWins: 0,
-            totalPoints: 0,
-            recentPerformance: []
-        };
-        await setDoc(doc(db, 'players', newPlayerId), newPlayer);
+    // 2. Create Player Document (We need to import this logic or do it here)
+    // For now, we do it here directly to ensure atomicity-ish consistency
+    const newPlayer = {
+        id: newPlayerId,
+        name: name,
+        heroStats: {},
+        tournamentsPlayed: 0,
+        totalWins: 0,
+        totalPoints: 0,
+        recentPerformance: []
     };
+    await setDoc(doc(db, 'players', newPlayerId), newPlayer);
+};
 
-    const logout = async () => {
-        await signOut(auth);
-    };
+const logout = async () => {
+    await signOut(auth);
+};
 
-    const value = {
-        currentUser,
-        loading,
-        isAdmin: currentUser?.role === 'ADMIN',
-        login,
-        signup,
-        logout
-    };
+const value = {
+    currentUser,
+    loading,
+    isAdmin: currentUser?.role === 'ADMIN',
+    login,
+    signup,
+    logout
+};
 
-    return (
-        <AuthContext.Provider value={value}>
-            {!loading && children}
-        </AuthContext.Provider>
-    );
+return (
+    <AuthContext.Provider value={value}>
+        {!loading && children}
+    </AuthContext.Provider>
+);
 };
