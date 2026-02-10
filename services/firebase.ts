@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { initializeFirestore } from "firebase/firestore";
+import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -14,14 +14,9 @@ const firebaseConfig = {
 
 console.log("🔥 Firebase Config Check:");
 console.log("   - Project ID:", firebaseConfig.projectId ? "OK (" + firebaseConfig.projectId + ")" : "MISSING");
-console.log("   - Auth Domain:", firebaseConfig.authDomain ? "OK" : "MISSING");
+console.log("   - Auth Domain:", firebaseConfig.authDomain ? "OK (" + firebaseConfig.authDomain + ")" : "MISSING");
 console.log("   - API Key:", firebaseConfig.apiKey ? "OK (Length: " + firebaseConfig.apiKey.length + ")" : "MISSING");
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-
-// Use initializeFirestore to configure experimental settings
-// experimentalForceLongPolling is often the fix for "Client Offline" errors in restrictive networks
-export const db = initializeFirestore(app, {
-  experimentalForceLongPolling: true,
-});
+export const db = getFirestore(app);
