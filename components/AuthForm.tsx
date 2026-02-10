@@ -133,11 +133,7 @@ export const AuthForm: React.FC = () => {
           </div>
         </div>
 
-        {isLogin && (
-          <div className="bg-gray-900/50 p-4 text-center text-xs text-gray-500 border-t border-gray-800">
-            <p>Admin Demo: <span className="text-gray-300">santiagokita@gmail.com</span> / <span className="text-gray-300">admin123</span></p>
-          </div>
-        )}
+
       </div>
     </div>
   );
