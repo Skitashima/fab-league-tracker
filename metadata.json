@@ -1,0 +1,5 @@
+{
+  "name": "FaB League Tracker",
+  "description": "A comprehensive league tracker for local Flesh and Blood TCG tournaments with point calculation and AI-powered strategy advice.",
+  "requestFramePermissions": []
+}
