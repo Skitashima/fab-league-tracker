@@ -4,7 +4,7 @@ Una aplicación web moderna para gestionar ligas y torneos de **Flesh and Blood 
 
 ## Características Principales
 
-*   **Raneaking de Jugadores:** Tabla de posiciones automática basada en victorias y puntos.
+*   **Ranking de Jugadores:** Tabla de posiciones automática basada en victorias y puntos.
 *   **Gestión de Torneos:** Crea torneos, registra resultados y actualiza estadísticas al instante.
 *   **Perfiles de Jugador:** Historial detallado de partidas, héroes más usados y racha de victorias.
 *   **"El Oráculo":** Un asistente de IA (potenciado por Gemini) que responde dudas sobre reglas y estrategias del juego.
