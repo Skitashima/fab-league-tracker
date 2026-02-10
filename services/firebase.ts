@@ -19,4 +19,7 @@ console.log("   - API Key:", firebaseConfig.apiKey ? "OK (Length: " + firebaseCo
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+// Re-apply Long Polling fix now that SDK version is valid (v11.3.0)
+export const db = initializeFirestore(app, {
+  experimentalForceLongPolling: true,
+});
